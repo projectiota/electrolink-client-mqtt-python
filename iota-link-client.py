@@ -76,10 +76,10 @@ class iotaLink():
     def pinFunction(self, pinId, pinFnc)
         """
         {
-            "jsonrpc": "2.0",
-            "method": "setFunction",
-            "params": [<pinId>, <pinFnc>],
-            "id": <msgId>
+            jsonrpc: 2.0,
+            method: 'setFunction',
+            params: [<pinId>, <pinFnc>],
+            id: <msgId>
         }
         """
         self.msg['method'] = 'pinFunction'
