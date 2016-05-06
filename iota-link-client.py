@@ -73,7 +73,7 @@ class iotaLink():
     ###
     # pinFunction()
     ###
-    def pinFunction(self, pinId, pinFnc)
+    def pinFunction(self, pinId, pinFnc):
         """
         {
             jsonrpc: 2.0,
