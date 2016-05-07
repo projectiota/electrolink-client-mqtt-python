@@ -2,9 +2,9 @@ import paho.mqtt.client as mqtt
 import json
 import Queue
 
-qs = []
-
-
+###
+# IotaLink Class
+###
 class IotaLink():
 
     def __init__(self, mqttHost, mqttPort):
@@ -16,6 +16,7 @@ class IotaLink():
         self.client = None
         self.msg = {}
         self.msgId = 0
+        self.qs = {}
 
         # Define event callbacks
         def on_connect(mosq, obj, rc):
@@ -25,7 +26,7 @@ class IotaLink():
             print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
 
             p = json.loads(msg.payload);
-            qs[p['id']].put(p)
+            self.qs[p['id']].put(p)
 
         def on_publish(mosq, obj, mid):
             print("mid: " + str(mid))
@@ -56,17 +57,16 @@ class IotaLink():
         self.msg['id'] = self.msgId
 
         # Create a queue for this message
-        qs = {}
-        qs[self.msgId] = Queue.Queue()
+        self.qs[self.msgId] = Queue.Queue()
 
         payload = json.dumps(self.msg)
         (rc, mid) = self.client.publish(self.mqttTopic, payload, qos=1)
 
         # Block on queue waiting for response
-        rsp = qs[self.msgId].get()
+        rsp = self.qs[self.msgId].get()
 
         # Delete queue for this message
-        del qs[self.msgId]
+        del self.qs[self.msgId]
 
         return rsp
 
