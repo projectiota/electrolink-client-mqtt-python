@@ -5,14 +5,16 @@ import Queue
 qs = []
 
 
-class iotaLink():
+class IotaLink():
 
     def __init__(self, mqttHost, mqttPort):
         self.host = mqttHost
         self.port = mqttPort
+        self.mqttTopic = '/test'
         self.authUuid = ''
         self.token = ''
         self.client = None
+        self.msg = {}
         self.msgId = 0
 
         # Define event callbacks
@@ -46,24 +48,25 @@ class iotaLink():
         # Start looping
         self.client.loop_start()
 
-    def linkIt():
+    def linkIt(self):
         self.msg['jsonrpc'] = '2.0'
 
         # Increment self.msgId to make it unique
-        slef.msgId += 1
+        self.msgId += 1
         self.msg['id'] = self.msgId
 
         # Create a queue for this message
-        qs[msgId] = Queue.Queue()
+        qs = {}
+        qs[self.msgId] = Queue.Queue()
 
-        payload = json.dumps(s)
-        (rc, mid) = self.client.publish(mqttTopic, payload, qos=1)
+        payload = json.dumps(self.msg)
+        (rc, mid) = self.client.publish(self.mqttTopic, payload, qos=1)
 
         # Block on queue waiting for response
-        rsp = qs[msgId].get()
+        rsp = qs[self.msgId].get()
 
         # Delete queue for this message
-        qs.del(msgId)
+        del qs[self.msgId]
 
         return rsp
 
@@ -279,7 +282,7 @@ class iotaLink():
     ###
     # registerRead()
     ###
-    def i2cTransfer(self, regAddr):
+    def registerRead(self, regAddr):
 
         self.msg['method'] = 'registerRead'
         self.msg['params'] = [regAddr]
@@ -289,7 +292,7 @@ class iotaLink():
     ###
     # getDeviceInfo()
     ###
-    def i2cStop(self):
+    def getDeviceInfo(self):
 
         self.msg['method'] = 'getDeviceInfo'
         self.msg['params'] = []
