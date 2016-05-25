@@ -3,9 +3,9 @@ import json
 import Queue
 
 ###
-# IotaLink Class
+# Electrolink Class
 ###
-class IotaLink():
+class Electrolink():
 
     def __init__(self, mqttHost, mqttPort):
         self.host = mqttHost

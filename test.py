@@ -1,5 +1,5 @@
-from iotaLinkClient import IotaLink
+from electrolinkClient import Electrolink
 
-il = IotaLink('localhost', 1883)
+el = Electrolink('localhost', 1883)
 
-print il.getDeviceInfo()
+print el.getDeviceInfo()
