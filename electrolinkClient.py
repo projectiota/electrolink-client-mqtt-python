@@ -10,17 +10,19 @@ class Electrolink():
     def __init__(self, mqttHost, mqttPort):
         self.host = mqttHost
         self.port = mqttPort
-        self.mqttTopic = '/test'
+        self.mqttTopicReq = '/electrolink/req'
+        self.mqttTopicRsp = '/electrolink/rsp'
         self.authUuid = ''
         self.token = ''
         self.client = None
         self.msg = {}
         self.msgId = 0
-        self.qs = {}
+        self.qs = Queue.Queue()
 
         # Define event callbacks
         def on_connect(mosq, obj, rc):
             print("rc: " + str(rc))
+            self.client.subscribe(self.mqttTopicRsp)
 
         def on_message(mosq, obj, msg):
             print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
@@ -43,30 +45,21 @@ class Electrolink():
         self.client.on_connect = on_connect
         self.client.on_message = on_message
         self.client.on_publish = on_publish
+        self.client.on_subscribe = on_subscribe
 
+        print self.host, self.port
         self.client.connect(self.host, self.port, 60)
 
         # Start looping
         self.client.loop_start()
 
     def linkIt(self):
-        self.msg['jsonrpc'] = '2.0'
-
-        # Increment self.msgId to make it unique
-        self.msgId += 1
-        self.msg['id'] = self.msgId
-
-        # Create a queue for this message
-        self.qs[self.msgId] = Queue.Queue()
 
         payload = json.dumps(self.msg)
-        (rc, mid) = self.client.publish(self.mqttTopic, payload, qos=1)
+        (rc, mid) = self.client.publish(self.mqttTopicReq, payload, qos=1)
 
         # Block on queue waiting for response
-        rsp = self.qs[self.msgId].get()
-
-        # Delete queue for this message
-        del self.qs[self.msgId]
+        rsp = self.qs.get()
 
         return rsp
 
@@ -79,10 +72,8 @@ class Electrolink():
     def pinFunction(self, pinId, pinFnc):
         """
         {
-            'jsonrpc': '2.0',
             'method': 'setFunction',
             'params': [<pinId>, <pinFnc>],
-            'id': <msgId>
         }
         """
         self.msg['method'] = 'pinFunction'
@@ -128,8 +119,8 @@ class Electrolink():
     ###
     def attachInterrupt(self, intId, pinId, mode):
 
-        self.msg['method'] = 'digitalWrite'
-        self.msg['params'] = [pinId, value]
+        self.msg['method'] = 'attachInterrupt'
+        self.msg['params'] = [intId, pinId, mode]
         
         return self.linkIt()
 
@@ -139,8 +130,8 @@ class Electrolink():
     ###
     def detachInterrupt(self, intId):
 
-        self.msg['method'] = 'digitalWrite'
-        self.msg['params'] = [pinId, value]
+        self.msg['method'] = 'detachInterrupt'
+        self.msg['params'] = [intId]
         
         return self.linkIt()
 
